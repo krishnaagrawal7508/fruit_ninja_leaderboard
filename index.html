@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Krishna's fruit ninja</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</head>
+
+<body><!-- Game canvas -->
+    <canvas id="c"></canvas>
+
+    <!-- Gameplay HUD -->
+    <div class="hud">
+        <div class="hud__score">
+            <div class="score-lbl"></div>
+            <div class="cube-count-lbl"></div>
+        </div>
+        <div class="pause-btn">
+            <div></div>
+        </div>
+        <div class="slowmo">
+            <div class="slowmo__bar"></div>
+        </div>
+    </div>
+
+    <!-- Menu System -->
+    <div class="menus">
+        <div class="menu menu--main">
+            <h1>BIT SLICE</h1>
+            <button type="button" class="play-normal-btn">PLAY GAME</button>
+            <button type="button" class="play-casual-btn">CASUAL MODE</button>
+            <!-- <div class="credits">Slice game by</div> -->
+        </div>
+        <div class="menu menu--pause">
+            <h1>Paused</h1>
+            <button type="button" class="resume-btn">RESUME GAME</button>
+            <button type="button" class="menu-btn--pause">MAIN MENU</button>
+        </div>
+        <div class="menu menu--score">
+            <h1>Game Over</h1>
+            <h2>Your Score:</h2>
+            <div class="final-score-lbl"></div>
+            <div class="high-score-lbl"></div>
+            <button type="button" class="play-again-btn">PLAY AGAIN</button>
+            <button type="button" class="menu-btn--score">MAIN MENU</button>
+            <a href="leaderboard/leaderboard.html"><button type="button" class="">LEADERBOARD</button></a>
+            <br>
+            <br>
+            <div>
+                <h2>Enter your Solana wallet to be in leaderboard:</h2>
+                <div class="input-group mb-3">
+                    <input id="solAddress" class="form-control" required pattern="^([a-zA-Z0-9]){44}$" placeholder="Enter $SOL Wallet..">
+                    <button id="submit" class="btn btn-outline-secondary">SUBMIT</button>
+                </div>
+                <span class="error-message" id="solanaAddressError"></span>
+                <!-- <label>High score</label><input id="score" type="text"> -->
+                
+            </div>
+
+        </div>
+    </div>
+    <script src="index.js"></script>
+    <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_Ni04g09uMOYa8aezXwkFmtbdtnoRfeI",
+            authDomain: "leaderboard-7a0fa.firebaseapp.com",
+            projectId: "leaderboard-7a0fa",
+            storageBucket: "leaderboard-7a0fa.appspot.com",
+            messagingSenderId: "839690063202",
+            appId: "1:839690063202:web:6728cdfe21622c89a4303b"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        import { getDatabase, ref, set, child, update, remove, onValue, get }
+            from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const db = getDatabase();
+
+        var sol_address = document.getElementById("solAddress");
+
+        var subBtn = document.getElementById("submit");
+
+        function InsertData() {
+
+            var solanaAddressInput = document.getElementById('solAddress');
+            var solanaAddressError = document.getElementById('solanaAddressError');
+
+            // Use a regex pattern for Solana wallet address validation
+            var solanaAddressPattern = /^([a-zA-Z0-9]){44}$/;
+
+            if (!solanaAddressPattern.test(solanaAddressInput.value)) {
+                // If the input does not match the pattern, show an error message
+                solanaAddressError.textContent = 'Please enter a valid Solana wallet address.';
+                // event.preventDefault(); 
+            }
+            else {
+                get(child(ref(db), 'leaderboardFile/' + sol_address.value)).then((snapshot) => {
+
+                    // console.log(snapshot);
+                    if (snapshot.exists() && snapshot._node.children_.root_.left.value.value_ > state.game.score) {
+                        alert("You have already scored better than this 🚀!");
+                        disableBtn();
+                        return;
+                    }
+                    else {
+                        solanaAddressError.textContent = '';
+                        disableBtn();
+
+                        set(ref(db, "leaderboardFile/" + sol_address.value), {
+                            SOL_ADDRESS: sol_address.value,
+                            SCORE: formatNumber(state.game.score)
+                        })
+                            .then(() => {
+                                alert("Your score has been stored, keep going!! 🚀 ");
+                            })
+                            .catch((error) => {
+                                alert("unsuccess, error " + error);
+                            });
+                    }
+                })
+
+            }
+        }
+
+        function disableBtn() {
+            subBtn.disabled = true;
+        }
+        function ableBtn() {
+            subBtn.disabled = false;
+        }
+
+
+        subBtn.addEventListener('click', InsertData);
+        document.getElementsByClassName("play-again-btn")[0].addEventListener('click', function () {
+            subBtn.disabled = false;
+        });
+        document.getElementsByClassName("menu-btn--score")[0].addEventListener('click', function () {
+            subBtn.disabled = false;
+        });
+        document.getElementsByClassName("play-normal-btn")[0].addEventListener('click', function () {
+            subBtn.disabled = false;
+        });
+
+    </script>
+</body>
+
+</html>
